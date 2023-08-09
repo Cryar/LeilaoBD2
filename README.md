@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Django Tutorial
 
 1 - Installation<br>
@@ -119,3 +120,6 @@ Foreign Key
 	Running migrations:
 	  Applying website.0004_auto_20191118_1537... OK
 
+=======
+# LeilaoBD2
+>>>>>>> 7eca1bb99e7b3c3012524b1c6b8b0a9699ea9572
