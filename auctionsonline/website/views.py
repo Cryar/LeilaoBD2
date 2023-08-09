@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.shortcuts import render
 
+from django.db import connection
+
 from django.utils import timezone
 from datetime import datetime
 from itertools import chain
@@ -430,4 +432,20 @@ def logout_page(request):
         pass # if there is no session pass
     return index(request)
 
-#ff
+def product_details(request, product_id):
+    product = Product.objects.get(pk=product_id)
+    return render(request, 'products/product_detail.html', {'product': product})
+
+def product_detail(request):
+    # Get the database connection using the alias "default"
+    db_connection = connection['default']
+
+    # Perform database operations
+    with db_connection.cursor() as cursor:
+        # Execute a SQL query
+        cursor.execute("SELECT * FROM website_product")
+
+        rows = cursor.fetchall()
+
+    # Process the data or return a response
+    return render(request, 'products.html', {'data': rows})
