@@ -96,3 +96,12 @@ class Faturas(models.Model):
 	fatura_id = models.AutoField('Fatura ID', primary_key=True, unique=True, serialize=True)
 	data_fatura  = models.DateField("Data da fatura")
 	licitacao = models.ForeignKey(Licitacoes, on_delete=models.CASCADE)
+ 
+class Auction(models.Model):
+	product_id = models.ForeignKey(Produtos, on_delete=models.CASCADE)
+	number_of_bids = models.IntegerField()
+	time_starting = models.DateTimeField()
+	time_ending = models.DateTimeField()
+	
+	def __str__(self):
+		return "ID:" + str(self.pk) + " PRODUCT_ID:" + str(self.product_id)

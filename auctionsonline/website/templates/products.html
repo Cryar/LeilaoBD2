@@ -1,13 +1,13 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" type="text/css" href="/static/css/products.css">
+    <link rel="stylesheet" type="text/css" href="{% static '/css/products.css' %}">
 </head>
 <body>
 {% now "Y-m-d-H-i-s" as todays_date %}
 <div class="container-fluid">
     <div id="myCarousel" class="carousel slide" data-interval="false">
-    {% load custom_tags %}
         {% for auction in auctions %}
         {% if forloop.counter0|divisibleby:'4' %}
             {% if forloop.counter0 != 0 %}
@@ -27,42 +27,40 @@
             {% endif %}
         {% endif %}
             <div class="card">
-                <img class="card-img-top img-fluid" src='/media/{{ auction.product_id.image }}' alt="Card image cap">
+                <img class="card-img-top img-fluid" src='/media/{{ auction.produto_id.imagem }}' alt="Card image cap">
                 <div class="card-body">
                     <div id="item_name">
-                        <h4 class="card-title text-center">{{ auction.product_id.title }}</h4><hr>
+                        <h4 class="card-title text-center">{{ auction.produto_id.titulo }}</h4><hr>
                     </div>
-                    <p class="card-text">{{ auction.product_id.description }}</p>
-                    {% if todays_date > auction.time_starting|date:'Y-m-d-H-i-s' %}
-                    <h4 class="card-title text-center">€{{auction|current_price}}</h4>
+                    <p class="card-text">{{ auction.produto_id.descricao }}</p>
+                    <p class="card-text"> Preço Base: {{ auction.preco_base }}€</p>
+                    {% if todays_date > auction.hora_inicio %}
+                    <h4 class="card-title text-center">€{{ auction.preco_base }}</h4>
                     {% endif %}
-                    <p class="card-text"><small class="text-muted"> 
-                    {% if todays_date > auction.time_starting|date:'Y-m-d-H-i-s' %}
-                    Auction ends in: {{ auction.time_ending|time_left }}
-                    {% else %}
-                    Auction starts: {{ auction.time_starting|date:'d-m-Y H:i:s' }}
-                    {% endif %}
-                    
-                    </small></p>
-                    
-                    {% if todays_date > auction.time_starting|date:'Y-m-d-H-i-s' %}
+                    <p class="card-text"><small class="text-muted">
+                        <pclass="card-text"> Leilao começa: {{ auction.hora_inicio|date:'d-m-Y H:i:s' }}</p>
+                        
+                        <pclass="card-text"> Leilao acaba: {{ auction.hora_fim|date:'d-m-Y H:i:s' }}</p>
+
+                        </small></p>
+                    {% if todays_date > auction.hora_inicio %}
                     <div>
                         <!-- BID NOW BUTTON -->
-                        <button type="button" class="btn btn-primary bid_now_button" onclick="location.href='/website/bid/{{auction.id}}'">Bid Now</button>
+                        <button type="button" class="btn btn-primary bid_now_button" onclick="location.href='/website/bid/{{ auction.id }}'">Bid Now</button>
                     </div>
                     {% endif %}
                     <div>
                         <!-- WATCH BUTTON -->
-                        <button type="button" class="btn btn-outline-primary watch_button" onclick="location.href='/website/watchlist/{{auction.id}}'">
-                        {% if watchlist %}
-                            {% if watchlist|search:auction.id%}
-                            Unwatch
+                        <button type="button" class="btn btn-outline-primary watch_button" onclick="location.href='/website/watchlist/{{ auction.id }}'">
+                            {% if watchlist %}
+                                {% if auction.id in watchlist %}
+                                    Unwatch
+                                {% else %}
+                                    Watch
+                                {% endif %}
                             {% else %}
-                            Watch
+                                Watch
                             {% endif %}
-                        {% else %}
-                            Watch
-                        {% endif %}
                         </button>
                     </div>
                 </div>

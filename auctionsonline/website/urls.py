@@ -1,5 +1,7 @@
 from . import views
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 
 app_name = 'website'
 
@@ -9,6 +11,7 @@ urlpatterns = [
 	path('logout/', views.logout_page, name='logout_view'),
 	path('register/', views.register_page, name='register_page'),
 	path('register/new_user/', views.register, name='register'),
+    path('Leiloes/', views.product_list, name='Leiloes'),
     path('category/<str:category>/', views.filter_auctions, name='filter_auctions'),
     path('watchlist/<int:auction_id>/', views.watchlist, name='watchlist'),
     path('balance/', views.balance, name='balance'),

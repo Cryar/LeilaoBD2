@@ -8,7 +8,7 @@ from datetime import datetime
 from itertools import chain
 
 from website.forms import *
-from website.models import Licitacoes, Produtos, Users, Leiloes, Lotes, Fotos, Negociacoes
+from website.models import Licitacoes, Auction, Produtos, Users, Leiloes, Lotes, Fotos, Negociacoes, Watchlist
 
 from website.validation import validate_login, validate_registration
 from website.transactions import increase_bid, remaining_time
@@ -34,7 +34,7 @@ def index(request):
                 a = Auction.objects.filter(id=item.auction_id.id)
                 watchlist = list(chain(watchlist, a))
 
-            userDetails = UserDetails.objects.get(user_id=user.id)
+            userDetails = Users.objects.get(user_id=user.id)
             return render(request, 'index.html',
                 {'auctions': auctions, 'balance': userDetails.balance, 'watchlist': watchlist})
     except KeyError:
@@ -170,7 +170,7 @@ def raise_bid(request, auction_id):
     try:
         if request.session['username']:
             user = User.objects.get(username=request.session['username'])
-            userDetails = UserDetails.objects.filter(user_id=user.id)
+            userDetails = Users.objects.filter(user_id=user.id)
             if userDetails.balance > 0.0:
                 latest_bid = Bid.objects.filter(auction_id=auction.id).order_by('-bid_time')
                 if not latest_bid:
@@ -293,7 +293,7 @@ def topup(request):
             try:
                 if request.session['username']:
                     user = User.objects.get(username=request.session['username'])
-                    userDetails = UserDetails.objects.get(user_id=user.id)
+                    userDetails = Users.objects.get(user_id=user.id)
                     userDetails.balance += form.cleaned_data['amount']
                     userDetails.save()
             except KeyError:
@@ -385,7 +385,7 @@ def register(request):
                 user.first_name = form.cleaned_data['firstname']
                 user.last_name = form.cleaned_data['lastname']
                 user.save()  # Save the object to the database.
-                userDetails = UserDetails()
+                userDetails = Users()
                 userDetails.balance = 0.0
                 userDetails.cellphone = form.cleaned_data['cellphone']
                 userDetails.address = form.cleaned_data['address']
@@ -433,19 +433,34 @@ def logout_page(request):
     return index(request)
 
 def product_details(request, product_id):
-    product = Product.objects.get(pk=product_id)
+    product = Produtos.objects.get(pk=product_id)
     return render(request, 'products/product_detail.html', {'product': product})
 
-def product_detail(request):
+"""def product_detail(request):
     # Get the database connection using the alias "default"
-    db_connection = connection['default']
+    db_connection = connection
 
     # Perform database operations
     with db_connection.cursor() as cursor:
         # Execute a SQL query
-        cursor.execute("SELECT * FROM website_product")
+        cursor.execute("SELECT * FROM website_produtos")
 
         rows = cursor.fetchall()
 
     # Process the data or return a response
-    return render(request, 'products.html', {'data': rows})
+    return render(request, 'products.html', {'data': rows})"""
+
+def product_list(request):
+    auctions = Leiloes.objects.select_related('produto_id').all()  # Fetch auctions with related product details
+
+    for auction in auctions:
+        if auction.hora_fim > timezone.now():
+            auction.time_remaining = auction.hora_fim - timezone.now()
+        else:
+            auction.time_remaining = None
+            
+    context = {
+        'auctions': auctions,
+    }
+
+    return render(request, 'products.html', context)
