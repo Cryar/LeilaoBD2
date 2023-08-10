@@ -8,7 +8,7 @@ from datetime import datetime
 from itertools import chain
 
 from website.forms import *
-from website.models import Product, Auction, Watchlist, Bid, Chat, UserDetails
+from website.models import Licitacoes, Produtos, Users, Leiloes, Lotes, Fotos, Negociacoes
 
 from website.validation import validate_login, validate_registration
 from website.transactions import increase_bid, remaining_time

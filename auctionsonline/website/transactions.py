@@ -1,4 +1,4 @@
-from website.models import UserDetails, Auction, Bid
+from website.models import Users, Leiloes, Licitacoes
 from django.utils import timezone
 from datetime import datetime, timedelta
 

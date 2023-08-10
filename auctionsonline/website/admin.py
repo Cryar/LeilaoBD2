@@ -1,13 +1,15 @@
 from django.contrib import admin
-from .models import UserDetails, Product, Auction, Chat, Watchlist, Bid
+from .models import *
 
 #Username : admin
 #Password : administrator
 
 # Register your models here.
-admin.site.register(UserDetails)
-admin.site.register(Product)
-admin.site.register(Auction)
-admin.site.register(Chat)
+admin.site.register(Users)
+admin.site.register(Produtos)
+admin.site.register(Leiloes)
+admin.site.register(Negociacoes)
 admin.site.register(Watchlist)
-admin.site.register(Bid)
+admin.site.register(Faturas)
+admin.site.register(Lotes)
+admin.site.register(Fotos)
