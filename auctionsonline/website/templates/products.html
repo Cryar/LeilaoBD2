@@ -1,69 +1,37 @@
-{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <link rel="stylesheet" type="text/css" href="/static/css/produtos.css">
 </head>
-{% now "Y-m-d" as todays_date %}
-{% now "H:i" as actual_time %}
-<div class="container-fluid">
-    <div id="myCarousel" class="carousel slide" data-interval="false">
+<body>
+    <div class="grid-container">
+        <!-- Loop through auctions and create cards -->
         {% for auction in auctions %}
-        {% if forloop.counter0|divisibleby:'4' %}
-            {% if forloop.counter0 != 0 %}
-            </div>
-            {% endif %}
-        <div class="carousel-inner row w-100 mx-auto">
-            {% if auctions|length == 1 %} <div class="carousel-item col-md-12 active">
-            {% elif auctions|length == 2 %} <div class="carousel-item col-md-6 active">
-            {% elif auctions|length == 3 %} <div class="carousel-item col-md-4 active">
-            {% else %} <div class="carousel-item col-md-3 active">
-            {% endif %}
-        {% else %}
-            {% if auctions|length == 1 %} <div class="carousel-item col-md-12">
-            {% elif auctions|length == 2 %} <div class="carousel-item col-md-6">
-            {% elif auctions|length == 3 %} <div class="carousel-item col-md-4">
-            {% else %} <div class="carousel-item col-md-3">
-            {% endif %}
-        {% endif %}
-            <div class="card">
-                <img class="card-img-top img-fluid" src='/media/{{ auction.produto_id.imagem }}' alt="Card image cap">
-                <div class="card-body">
-                    <div id="item_name">
-                        <h4 class="card-title text-center">{{ auction.produto_id.titulo }}</h4><hr>
-                    </div>
-                    <p class="card-text">{{ auction.produto_id.descricao }}</p>
-                    <p class="card-text"> Preço Base: {{ auction.preco_base }}€</p>
-        
-                    <small class="text-muted">
-                    <p class="card-text">Leilao começa: {{ auction.hora_inicio|time:'H:i' }}</p>
-                    <p class="card-text">Leilao acaba: {{ auction.hora_fim|time:'H:i' }}</p>
-                    </small>
-                    <div>
-                    <!-- BID NOW BUTTON -->
-                    <button type="button" class="btn btn-primary bid_now_button" onclick="location.href='/website/bid/{{ auction.id }}'">Bid Now</button>
-                    </div>
-                    </div>
-                    <div>
-                        <!-- WATCH BUTTON -->
-                        <button type="button" class="btn btn-outline-primary watch_button" onclick="location.href='/website/watchlist/{{ auction.id }}'">
-                            {% if watchlist %}
-                                {% if auction.id in watchlist %}
-                                    Unwatch
-                                {% else %}
-                                    Watch
-                                {% endif %}
-                            {% else %}
-                                Watch
-                            {% endif %}
-                        </button>
-                    </div>
-                </div>
+        <div class="card">
+            <img class="card-img-top" src='/media/{{ auction.produto_id.imagem }}' alt="Card image cap">
+            <div class="card-body">
+                <h4 class="card-title">{{ auction.produto_id.titulo }}</h4>
+                <p class="card-text">{{ auction.produto_id.descricao }}</p>
+                <p class="card-text">Preço Base: {{ auction.preco_base }}€</p>
+                <p class="text-muted">Leilao começa: {{ auction.hora_inicio|time:'H:i' }}</p>
+                <p class="text-muted">Leilao acaba: {{ auction.hora_fim|time:'H:i' }}</p>
+                <!-- BID NOW BUTTON -->
+                <button type="button" class="btn btn-primary bid_now_button" onclick="location.href='/website/bid/{{ auction.id }}'">Bid Now</button>
+                <!-- WATCH BUTTON -->
+                <button type="button" class="btn btn-outline-primary watch_button" onclick="location.href='/website/watchlist/{{ auction.id }}'">
+                    {% if watchlist %}
+                        {% if auction.id in watchlist %}
+                            Unwatch
+                        {% else %}
+                            Watch
+                        {% endif %}
+                    {% else %}
+                        Watch
+                    {% endif %}
+                </button>
             </div>
         </div>
         {% endfor %}
-        </div>
     </div>
-</div>
 </body>
 </html>

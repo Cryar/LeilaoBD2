@@ -4,8 +4,10 @@ from django.contrib.auth.models import User
 def validate_login(username, password):
     user = authenticate(username=username, password=password)
     if user is not None:
+        print('Bem vindo')
         return True
     else:
+        print('Invalido')
         return False
 
 def validate_registration(username, password1, password2, email):

@@ -379,7 +379,7 @@ def register(request):
             )
             if is_valid:
                 # Create an User object with the form parameters.
-                user = User.objects.create_user(username=form.cleaned_data['username'],
+                user = Users.objects.create_user(username=form.cleaned_data['username'],
                                                 email=form.cleaned_data['email'],
                                                 password=form.cleaned_data['password1'])
                 user.first_name = form.cleaned_data['firstname']
