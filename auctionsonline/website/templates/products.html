@@ -5,22 +5,22 @@
 </head>
 <body>
     <div class="grid-container">
-        <!-- Loop through auctions and create cards -->
-        {% for auction in auctions %}
+        <!-- Loop through leilaosand create cards -->
+        {% for leilao in Leiloes %}
         <div class="card">
-            <img class="card-img-top" src='/media/{{ auction.produto_id.imagem }}' alt="Card image cap">
+            <img class="card-img-top" src='/media/{{ leilao.produto_id.imagem }}' alt="Card image cap">
             <div class="card-body">
-                <h4 class="card-title">{{ auction.produto_id.titulo }}</h4>
-                <p class="card-text">{{ auction.produto_id.descricao }}</p>
-                <p class="card-text">Preço Base: {{ auction.preco_base }}€</p>
-                <p class="text-muted">Leilao começa: {{ auction.hora_inicio|time:'H:i' }}</p>
-                <p class="text-muted">Leilao acaba: {{ auction.hora_fim|time:'H:i' }}</p>
+                <h4 class="card-title">{{ leilao.produto_id.titulo }}</h4>
+                <p class="card-text">{{ leilao.produto_id.descricao }}</p>
+                <p class="card-text">Preço Base: {{ leilao.preco_base }}€</p>
+                <p class="text-muted">Leilao começa: {{ leilao.hora_inicio|time:'H:i' }}</p>
+                <p class="text-muted">Leilao acaba: {{ leilao.hora_fim|time:'H:i' }}</p>
                 <!-- BID NOW BUTTON -->
-                <button type="button" class="btn btn-primary bid_now_button" onclick="location.href='/website/bid/{{ auction.id }}'">Bid Now</button>
+                <button type="button" class="btn btn-primary bid_now_button" onclick="location.href='/website/bid/{{ leilao.leilao_id }}'">Licitar</button>
                 <!-- WATCH BUTTON -->
-                <button type="button" class="btn btn-outline-primary watch_button" onclick="location.href='/website/watchlist/{{ auction.id }}'">
+                <button type="button" class="btn btn-outline-primary watch_button" onclick="location.href='/website/watchlist/{{ leilao.id }}'">
                     {% if watchlist %}
-                        {% if auction.id in watchlist %}
+                        {% if leilao.leilao_id in watchlist %}
                             Unwatch
                         {% else %}
                             Watch

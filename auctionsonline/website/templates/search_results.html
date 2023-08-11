@@ -1,0 +1,25 @@
+{% extends 'index.html' %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results</title>
+</head>
+<body>
+    <h1>Search Results</h1>
+{% block content %}
+        {% for produto_id in matching_produto_ids %}
+            <li>
+                Leilao ID: {{ leilao.leilao_id }}
+                Produto: {{ leilao.produto_id }}
+                Número de Licitacoes: {{ leilao.numero_de_licitacoes }}
+                Preco Base: {{ leilao.preco_base }}
+                Hora Inicio: {{ leilao.hora_inicio }}
+                Hora Fim: {{ leilao.hora_fim }}
+                Incremento Minimo: {{ leilao.incremento_minimo }}
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+    </ul>
+</body>
+</html>

@@ -1,9 +1,8 @@
 from django.contrib.auth.models import User
 from django.shortcuts import render
-import pymongo
 
 from django.db import connection
-
+from django.db.models import Q
 from django.utils import timezone
 from datetime import datetime
 from itertools import chain
@@ -420,12 +419,32 @@ def produto_list(request):
             time_remaining = None
             
     context = {
-        'leilao': leilao,
+        'Leiloes': leilao,
     }
 
-    return render(request, 'produtos.html', context)
+    return render(request, 'products.html', context)
 
-conexaomongo = pymongo.MongoClient("mongodb+srv://Areias:hu58lz@cluster0.kopdoil.mongodb.net/")["BD2Leilao"]
+def search_results_page(request):
+    produto_ids = request.GET.getlist('produto_ids')
+    
+    matching_leiloes = Leiloes.objects.filter(produto_id__in=produto_ids)
+    
+    return render(request, 'search_results.html', {'matching_leiloes': matching_leiloes})
+
+def search_leiloes(request):
+    date = request.GET.get('date')
+    time = request.GET.get('time')
+    datetime_str = f'{date} {time}'
+    search_datetime = timezone.make_aware(datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S'))
+
+    matching_leiloes = Leiloes.objects.filter(
+        hora_inicio__lte=search_datetime,
+        hora_fim__gte=search_datetime
+    )
+    
+    return render(request, 'search_results.html', {'matching_leiloes': matching_leiloes})
+
+"""conexaomongo = pymongo.MongoClient("mongodb+srv://Areias:hu58lz@cluster0.kopdoil.mongodb.net/")["BD2Leilao"]
 
 def session_name():
     bd = conexaomongo
@@ -451,4 +470,4 @@ def session():
     bd = conexaomongo
     col = bd["session"]
     x = col.count_documents({})
-    return x
+    return x"""

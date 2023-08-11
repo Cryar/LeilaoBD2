@@ -8,7 +8,7 @@
 {% extends 'index.html' %}
 {% block body %}
 <div id="bid-flexbox" class="d-flex flex-row">
-    <div class="p-2"><img id="preview_product" src="/media/{{ auction.product_id.image }}" /></div>
+    <div class="p-2"><img id="preview_product" src="/media/{{ leilao.product_id.image }}" /></div>
     <div class="p-2">
 
         <div id="bidding" class="jumbotron">
@@ -17,30 +17,30 @@
                 <tbody>
                     <tr>
                         {% if stats.2 %}
-                        <td><small>Time left:</small></td>
+                        <td><small>Tempo Restante:</small></td>
                         <td>{{ stats.0 }}</td>
                         {% else %}
-                        <p>Auction Ended! The winner is : {{ stats.3 }}</p>
+                        <p>Leilao Acabou! O vencedor é: {{ stats.3 }}</p>
                         {% endif %}
                     </tr>
                     <tr>
                         <td><small>Current bit:</small></td>
                         <td><b>EU {{stats.1}}€</b></td>
-                        <td><small>[ {{ auction.number_of_bids }} bids ]</small></td>
+                        <td><small>[ {{ Leiloes.numero_de_licitacoes}} Licitações ]</small></td>
                     </tr>
                 </tbody>
             </table>
 			</div>
 			{% if stats.2 %}
             <div>
-                <button type="button" id="b_button" class="btn btn-primary" onclick="location.href='/website/bid/{{auction.id}}/raise_bid'">Bid</button>
+                <button type="button" id="b_button" class="btn btn-primary" onclick="location.href='/website/bid/{{Leiloes.leilao_id}}/raise_bid'">Bid</button>
             </div>
             {% endif %}
             <div>
-                <button type="button" id="w_button" class="btn btn-outline-primary watch_button" onclick="location.href='/website/watchlist/{{auction.id}}'">
+                <button type="button" id="w_button" class="btn btn-outline-primary watch_button" onclick="location.href='/website/watchlist/{{Leiloes.leilao_id}}'">
                     {% load custom_tags %}
                     {% if watchlist %}
-                        {% if watchlist|search:auction.id%}
+                        {% if watchlist|search:Leiloes.leilao_id%}
                             Unwatch
                         {% else %}
                             Watch
@@ -58,13 +58,13 @@
             {% endfor %}
         </div>
 
-        <form method="post" action="/website/bid/{{auction.id}}/comment/">{% csrf_token %}
+        <form method="post" action="/website/bid/{{Leiloes.leilao_id}}/comment/">{% csrf_token %}
         <div class="form-group">
-            <label for="comment">Comment:</label>
+            <label for="comment">Comentarios:</label>
             <textarea class="form-control" rows="2" id="comment" name="comment"></textarea>
         </div>
 
-        <button id="post_button" type="submit" class="btn btn-outline-primary">Post Comment</button>
+        <button id="post_button" type="submit" class="btn btn-outline-primary">Comentar</button>
         </form>
     </div>
 </div>

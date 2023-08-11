@@ -69,7 +69,17 @@
             {% endif %}
         </ul>
     </nav>
-	
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <form class="form-inline mx-auto" action="{% url 'website:search_leiloes' %}">
+            <input class="form-control mr-sm-2" name="date" type="date">
+            <label for="time">Time:</label>
+            <input type="time" name="time" step="1" required>
+            <br>
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit" class="btn-search">Search</button>
+        </form>
+        </div>
+    </nav>
 	<!-- Ad and replacement -->
     <div class="d-flex justify-content-center">
 

@@ -7,6 +7,7 @@
     border-top: 1px solid #BEC4D0;
     border-bottom: 1px solid #BEC4D0;
     background-color: white; /* Set your desired background color */
+    margin-bottom: 0;
 }
 
 .logosite {
@@ -41,6 +42,8 @@
     grid-template-columns: repeat(4, 1fr); /* Adjust the number of columns as needed */
     gap: 20px; /* Adjust the gap between cards */
     padding: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
 }
 
 .card {
@@ -52,6 +55,8 @@
     align-items: center;
     width: 100%;
     height: 100%;
+    margin-top: 10px;
+    margin-bottom: 20px;
 }
 
 .card:hover {
@@ -59,7 +64,7 @@
 }
 
 .card-img-top {
-    max-height: 200px;
+    max-height: 150px;
     object-fit: contain;
     border-radius: 4px 4px 0 0;
 }
