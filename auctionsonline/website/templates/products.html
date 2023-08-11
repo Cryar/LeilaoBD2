@@ -2,10 +2,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" type="text/css" href="{% static '/css/products.css' %}">
+    <link rel="stylesheet" type="text/css" href="/static/css/produtos.css">
 </head>
-<body>
-{% now "Y-m-d-H-i-s" as todays_date %}
+{% now "Y-m-d" as todays_date %}
+{% now "H:i" as actual_time %}
 <div class="container-fluid">
     <div id="myCarousel" class="carousel slide" data-interval="false">
         {% for auction in auctions %}
@@ -34,21 +34,16 @@
                     </div>
                     <p class="card-text">{{ auction.produto_id.descricao }}</p>
                     <p class="card-text"> Preço Base: {{ auction.preco_base }}€</p>
-                    {% if todays_date > auction.hora_inicio %}
-                    <h4 class="card-title text-center">€{{ auction.preco_base }}</h4>
-                    {% endif %}
-                    <p class="card-text"><small class="text-muted">
-                        <pclass="card-text"> Leilao começa: {{ auction.hora_inicio|date:'d-m-Y H:i:s' }}</p>
-                        
-                        <pclass="card-text"> Leilao acaba: {{ auction.hora_fim|date:'d-m-Y H:i:s' }}</p>
-
-                        </small></p>
-                    {% if todays_date > auction.hora_inicio %}
+        
+                    <small class="text-muted">
+                    <p class="card-text">Leilao começa: {{ auction.hora_inicio|time:'H:i' }}</p>
+                    <p class="card-text">Leilao acaba: {{ auction.hora_fim|time:'H:i' }}</p>
+                    </small>
                     <div>
-                        <!-- BID NOW BUTTON -->
-                        <button type="button" class="btn btn-primary bid_now_button" onclick="location.href='/website/bid/{{ auction.id }}'">Bid Now</button>
+                    <!-- BID NOW BUTTON -->
+                    <button type="button" class="btn btn-primary bid_now_button" onclick="location.href='/website/bid/{{ auction.id }}'">Bid Now</button>
                     </div>
-                    {% endif %}
+                    </div>
                     <div>
                         <!-- WATCH BUTTON -->
                         <button type="button" class="btn btn-outline-primary watch_button" onclick="location.href='/website/watchlist/{{ auction.id }}'">
