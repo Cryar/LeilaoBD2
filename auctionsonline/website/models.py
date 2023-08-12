@@ -2,6 +2,9 @@ from django.contrib.auth.models import User
 from django.db import models
 
 # Create your models here.
+class Watchlist(models.Model):
+	watchlist_id = models.IntegerField(primary_key=True, unique=True, serialize=True)
+
 class Users(models.Model):
 	user_id = models.IntegerField(primary_key=True, serialize=True, unique=True)
 	username = models.CharField(max_length=40, unique=True)
@@ -21,17 +24,14 @@ class Users(models.Model):
 		user = Users.objects.get(id=self.user_id)
 		return "id=" + str(self.pk) + " username=" + Users.username + " email=" + Users.email
 	
-class Watchlist(models.Model):
-	Watchlist_id = models.IntegerField(primary_key=True, unique=True, serialize=True)
-	user = models.ForeignKey(Users, on_delete=models.CASCADE)
-	
 
 class Leiloes(models.Model):
     leilao_id = models.IntegerField(primary_key= True, unique= True, serialize= True)
     numero_de_licitacoes = models.IntegerField()
     preco_base = models.DecimalField(max_digits=6, decimal_places=2)
-    hora_inicio = models.DateTimeField()
-    hora_fim = models.DateTimeField()
+    dia = models.DateField()
+    hora_inicio = models.TimeField()
+    hora_fim = models.TimeField()
     incremento_minimo = models.DecimalField(max_digits=6, decimal_places=2, default=100.00)
     watch_list = models.ForeignKey(Watchlist, on_delete=models.CASCADE )
 

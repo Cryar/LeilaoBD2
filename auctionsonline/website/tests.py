@@ -2,7 +2,7 @@ from django.test import TestCase
 
 # Create your tests here.
 
-CALL inserir_user(
+"""CALL inserir_user(
 	1::INTEGER,
     'john_doe'::VARCHAR, 
 	'12345'::VARCHAR,
@@ -16,4 +16,4 @@ CALL inserir_user(
 	'12335'::VARCHAR,
 	'portugal'::VARCHAR,
      current_date::date 
-);
+);"""

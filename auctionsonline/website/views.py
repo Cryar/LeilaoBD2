@@ -1,10 +1,10 @@
 from django.contrib.auth.models import User
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from django.db import connection
 from django.db.models import Q
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, time, date
 from itertools import chain
 
 from website.forms import *
@@ -12,6 +12,9 @@ from website.models import Licitacoes, Leiloes, Produtos, Users, Leiloes, Lotes,
 
 from website.validation import validate_login, validate_registration
 from website.transactions import increase_bid, remaining_time
+
+from pymongo import MongoClient
+conexaomongo = MongoClient("mongodb+srv://Areias:hu58lz@cluster0.kopdoil.mongodb.net/")["BD2Leilao"]
 
 def index(request):
     """
@@ -24,21 +27,22 @@ def index(request):
     """
     leilao = Leiloes.objects.filter(hora_fim__gte=datetime.now()).order_by('hora_inicio')
 
-    try:
-        if request.session['username']:
-            user = Users.objects.get(username=request.session['username'])
+    user_id = request.session.get('user_id')
+    if user_id:
+        try:
+            user = Users.objects.get(user_id=user_id)
 
-            w = Watchlist.objects.filter(user.user_id)
+            w = Watchlist.objects.filter(user=user)
             watchlist = Leiloes.objects.none()
             for item in w:
                 l = Leiloes.objects.filter(id=item.Leilao_id)
                 watchlist = list(chain(watchlist, l))
 
-            userDetails = Users.objects.get(user.user_id)
+            userDetails = Users.objects.get(user_id=user_id)
             return render(request, 'index.html',
                 {'Leiloes': leilao, 'balance': userDetails.credito, 'watchlist': watchlist})
-    except KeyError:
-        return render(request, 'index.html', {'Leiloes': leilao})
+        except Users.DoesNotExist:
+            pass
 
     return render(request, 'index.html', {'Leiloes': leilao})
 
@@ -317,68 +321,62 @@ def filter_leilao(request, categoria):
 
     return index(request)
 
-def register(request):
-    """
-    Registration POST request.
+def session_id():
+    bd = conexaomongo
+    col = bd["Session"]
+    xx = col.find({},{'session_id': 0})
+    for xxx in xx:
+        return int(xxx["session_id"])
+    print(session_id)
 
-    Returns
-    -------
-    Function
-        Index page request
-    """
+def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            username = request.POST.get('username')
-            password1 = request.POST.get('password1')
-            password2 = request.POST.get('password2')
-            email = request.POST.get('email')
-            p_nome = request.POST.get('p_nome')
-            u_nome = request.POST.get('u_nome')
-            credito = request.POST.get('credito')
-            telefone = request.POST.get('telefone')
-            endereco = request.POST.get('endereco')
-            cidade = request.POST.get('cidade')
-            cod_postal = request.POST.get('cod_postal')
-            pais = request.POST.get('pais')
-            data_registo = datetime.today         
-            is_valid = validate_registration(
-                username,
-                password1,
-                password2,
-                email
-            )
-            if is_valid:
-                # Create an User object with the form parameters.
-                with connection.cursor() as cursor:
-                    cursor.callproc(
-                        'inserir_user',
-                        [username, password1, email, p_nome, u_nome, 
-                        credito, telefone, endereco, cidade, 
-                        cod_postal, pais, data_registo]
-                    )
-    return index(request)
+            username = form.cleaned_data['username']
+            password1 = form.cleaned_data['password1']
+            email = form.cleaned_data('email')
+            p_nome = form.cleaned_data('p_nome')
+            u_nome = form.cleaned_data('u_nome')
+            credito = form.cleaned_data('credito')
+            telefone = form.cleaned_data('telefone')
+            endereco = form.cleaned_data('endereco')
+            cidade = form.cleaned_data('cidade')
+            cod_postal = form.cleaned_data('cod_postal')
+            pais = form.cleaned_data('pais')
+            data_registo = date.today()
+
+            cursor = connection.cursor()
+            cursor.execute("call inserir_user(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);",
+                    (username, password1, email, p_nome, u_nome,
+                        float(credito), telefone, endereco, cidade,
+                        cod_postal, pais, data_registo))
+            cursor.close()
+            return index(request)
+
+    return render(request, 'index.html')
 
 def login_page(request):
-    """
-    Login POST request.
-        
-    Returns
-    -------
-    Function
-        Index page request    
-    """
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            is_valid = validate_login(
-                form.cleaned_data['username'], 
-                form.cleaned_data['password']
-            )
-            if is_valid :
-                # Creates a session with 'form.username' as key.
-                request.session['username'] = form.cleaned_data['username']
-    return index(request)
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            
+            is_valid = validate_login(username, password)
+            
+            if is_valid:
+                try:
+                    user = Users.objects.get(username=username, password=password)
+                except Users.DoesNotExist:
+                    user = None
+                
+                if user:
+                    request.session['user_id'] = user.user_id
+                    return redirect('index')  # Redirect to the index page
+                    
+    return render(request, 'index.html', {'form': form})
+
 
 def logout_page(request):
     """
@@ -414,14 +412,15 @@ def produto_details(request, produto_id):
     return render(request, 'produtos.html', {'data': rows})"""
 
 def produto_list(request):
-    leilao = Leiloes.objects.select_related('produto_id').all()  # Fetch Leiloes with related produto details
+    leilao = Leiloes.objects.select_related('leilao_id').all()  # Fetch Leiloes with related produto details
 
-    for l in leilao:
-        time_remaining = l.hora_fim - timezone.now()
-        if l.hora_fim > timezone.now():
+    
+    """for l in leilao:
+        time_remaining = l.hora_fim - datetime.now()
+        if l.hora_fim > datetime.now():
             time_remaining
         else:
-            time_remaining = None
+            time_remaining = None"""
             
     context = {
         'Leiloes': leilao,
@@ -429,50 +428,22 @@ def produto_list(request):
 
     return render(request, 'products.html', context)
 
-def search_results_page(request):
-    produto_ids = request.GET.getlist('produto_ids')
-    
-    matching_leiloes = Leiloes.objects.filter(produto_id__in=produto_ids)
-    
-    return render(request, 'search_results.html', {'matching_leiloes': matching_leiloes})
 
 def search_leiloes(request):
     date = request.GET.get('date')
-    time = request.GET.get('time')
-    datetime_str = f'{date} {time}'
-    search_datetime = timezone.make_aware(datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S'))
+    search_date = datetime.strptime(date, '%Y-%m-%d').date()
 
-    matching_leiloes = Leiloes.objects.filter(
-        hora_inicio__lte=search_datetime,
-        hora_fim__gte=search_datetime
-    )
-    
-    return render(request, 'search_results.html', {'matching_leiloes': matching_leiloes})
+    matching_leiloes = Leiloes.objects.filter(dia=search_date)
+    leilao_ids = [leilao.leilao_id for leilao in matching_leiloes]
 
-"""conexaomongo = pymongo.MongoClient("mongodb+srv://Areias:hu58lz@cluster0.kopdoil.mongodb.net/")["BD2Leilao"]
+    # Redirect to search_list view with leilao_ids parameter
+    return redirect('search_list', leilao_ids=leilao_ids)
 
-def session_name():
-    bd = conexaomongo
-    col2 = bd["session"]
-    xx = col2.find({},{'_id': 0})
-    for xxx in xx:
-        col3 = bd["utilizadores"]
-        yy = col3.find({'email': str(xxx["email"])},{'nome':(1), 'apelido':(1), '_id':(0)})
-        for yyy in yy:
-            nam = yyy["nome"]
-            ape = yyy["apelido"]
-            nome = nam + " " + ape
-            return nome
+def search_list(request, leilao_ids):
+    leiloes = Leiloes.objects.select_related('produto_id').filter(leilao_id__in=leilao_ids)
 
-def session_mail():
-    bd = conexaomongo
-    col = bd["session"]
-    xx = col.find({},{'_id': 0})
-    for xxx in xx:
-        return str(xxx["email"])
+    context = {
+        'leiloes': leiloes,
+    }
 
-def session():
-    bd = conexaomongo
-    col = bd["session"]
-    x = col.count_documents({})
-    return x"""
+    return render(request, 'products.html', context)

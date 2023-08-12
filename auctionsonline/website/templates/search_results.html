@@ -6,20 +6,23 @@
 </head>
 <body>
     <h1>Search Results</h1>
-{% block content %}
-        {% for produto_id in matching_produto_ids %}
+    <ul>
+        {% for leilao in matching_leiloes %}
             <li>
-                Leilao ID: {{ leilao.leilao_id }}
-                Produto: {{ leilao.produto_id }}
-                Número de Licitacoes: {{ leilao.numero_de_licitacoes }}
-                Preco Base: {{ leilao.preco_base }}
-                Hora Inicio: {{ leilao.hora_inicio }}
-                Hora Fim: {{ leilao.hora_fim }}
-                Incremento Minimo: {{ leilao.incremento_minimo }}
+                Leilao ID: {{ leilao.leilao_id }}<br>
+                Number of Licitacoes: {{ leilao.numero_de_licitacoes }}<br>
+                Preco Base: {{ leilao.preco_base }}<br>
+                Dia: {{ leilao.dia }}<br>
+                Hora Inicio: {{ leilao.hora_inicio }}<br>
+                Hora Fim: {{ leilao.hora_fim }}<br>
+                Incremento Minimo: {{ leilao.incremento_minimo }}<br>
+                Watchlist ID: {{ leilao.watch_list_id }}<br>
             </li>
         {% endfor %}
     </ul>
-{% endblock %}
-    </ul>
 </body>
 </html>
+
+
+
+

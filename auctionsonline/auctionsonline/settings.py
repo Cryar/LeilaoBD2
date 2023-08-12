@@ -78,9 +78,9 @@ WSGI_APPLICATION = 'auctionsonline.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'leiloeira',
-        'USER': 'admin',
-        'PASSWORD': 'admin2023',
+        'NAME': 'BD2Leilao',
+        'USER': 'postgres',
+        'PASSWORD': 'hu58lz',
         'HOST': '127.0.0.1',  # For example, 'localhost' or '127.0.0.1'
         'PORT': '5432',  # Usually 5432 for PostgreSQL
     }
@@ -111,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Europe/Athens'
+TIME_ZONE = 'Europe/Lisbon'
 
 USE_I18N = True
 
