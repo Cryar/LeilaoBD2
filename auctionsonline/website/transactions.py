@@ -2,7 +2,7 @@ from website.models import Users, Leiloes, Licitacoes
 from django.utils import timezone
 from datetime import datetime, timedelta
 
-def increase_bid(user, auction):
+def increase_bid(user, leiloes):
     """
     Removes €1.0 from user.
     Creates a Bid record
@@ -12,8 +12,8 @@ def increase_bid(user, auction):
     ----------
     auction : class 'website.models.Auction
     """
-    userDetails = UserDetails.objects.filter(user_id=user.id)
-    userDetails.balance = float(user.balance) - 1.0
+    user = Users.objects.filter(user_id= Users.user_id)
+    user.saldo = float(user.credito) - 1.0
     user.save()
     bid = Bid()
     bid.user_id = user
@@ -24,7 +24,7 @@ def increase_bid(user, auction):
     auction.time_ending = timezone.now() + timedelta(minutes=5)
     auction.save()
 
-def remaining_time(auction):
+def remaining_time(leiloes):
     """
     Calculates the auction's remaining time
     in minutes and seconds and converts them 
@@ -44,12 +44,12 @@ def remaining_time(auction):
         if the value is less than zero then the auction ended.
     
     """
-    time_left = auction.time_ending - timezone.now()
-    days, seconds = time_left.days, time_left.seconds
+    tempo_em_falta = Leiloes.hora_fim - timezone.now()
+    days, seconds = tempo_em_falta.days, tempo_em_falta.seconds
     hours = days * 24 + seconds // 3600
     minutes = (seconds % 3600) // 60
     seconds = seconds % 60
-    time_left = str(minutes) + "m " + str(seconds) + "s"
+    tempo_em_falta = str(minutes) + "m " + str(seconds) + "s"
     expired = days
     
-    return time_left, expired
+    return tempo_em_falta, expired

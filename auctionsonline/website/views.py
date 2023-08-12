@@ -329,29 +329,34 @@ def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
+            username = request.POST.get('username')
+            password1 = request.POST.get('password1')
+            password2 = request.POST.get('password2')
+            email = request.POST.get('email')
+            p_nome = request.POST.get('p_nome')
+            u_nome = request.POST.get('u_nome')
+            credito = request.POST.get('credito')
+            telefone = request.POST.get('telefone')
+            endereco = request.POST.get('endereco')
+            cidade = request.POST.get('cidade')
+            cod_postal = request.POST.get('cod_postal')
+            pais = request.POST.get('pais')
+            data_registo = datetime.today         
             is_valid = validate_registration(
-                form.cleaned_data['username'],
-                form.cleaned_data['password1'],
-                form.cleaned_data['password2'],
-                form.cleaned_data['email']
+                username,
+                password1,
+                password2,
+                email
             )
             if is_valid:
                 # Create an User object with the form parameters.
-                user = Users.objects.create_user(username=form.cleaned_data['username'],
-                                                email=form.cleaned_data['email'],
-                                                password=form.cleaned_data['password1'])
-                user.first_name = form.cleaned_data['firstname']
-                user.last_name = form.cleaned_data['lastname']
-                user.save()  # Save the object to the database.
-                userDetails = Users()
-                userDetails.balance = 0.0
-                userDetails.cellphone = form.cleaned_data['cellphone']
-                userDetails.address = form.cleaned_data['address']
-                userDetails.town = form.cleaned_data['town']
-                userDetails.post_code = form.cleaned_data['postcode']
-                userDetails.country = form.cleaned_data['country']
-                userDetails.user_id = user
-                userDetails.save()
+                with connection.cursor() as cursor:
+                    cursor.callproc(
+                        'inserir_user',
+                        [username, password1, email, p_nome, u_nome, 
+                        credito, telefone, endereco, cidade, 
+                        cod_postal, pais, data_registo]
+                    )
     return index(request)
 
 def login_page(request):
