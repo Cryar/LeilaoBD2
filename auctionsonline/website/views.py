@@ -14,7 +14,18 @@ from website.validation import validate_login, validate_registration
 from website.transactions import increase_bid, remaining_time
 
 from pymongo import MongoClient
-conexaomongo = MongoClient("mongodb+srv://Areias:hu58lz@cluster0.kopdoil.mongodb.net/")["BD2Leilao"]
+conexaomongo = MongoClient("mongodb+srv://Areias:hu58lz@cluster0.kopdoil.mongodb.net/")
+
+db = conexaomongo["BD2Leilao"]
+
+
+def leilao_list():
+    
+    dbpsql = connection
+    cursor = dbpsql.cursor()
+
+    leiloes = cursor.execute("SELECT * FROM website_leiloes")
+    return leiloes
 
 def index(request):
     """
@@ -25,26 +36,27 @@ def index(request):
     HTTPResponse
         The index page with the current and future Leiloes.
     """
-    leilao = Leiloes.objects.filter(hora_fim__gte=datetime.now()).order_by('hora_inicio')
+    leiloes = Leiloes.objects.filter(data_hora_fim__gte=datetime.now()).order_by('data_hora_inicio')
 
-    user_id = request.session.get('user_id')
-    if user_id:
+    session = request.session.get('session_key')
+    if session:
         try:
-            user = Users.objects.get(user_id=user_id)
+            user = Users.objects.get(username=session)
 
-            w = Watchlist.objects.filter(user=user)
+            w = Watchlist.objects.filter(username=user)
             watchlist = Leiloes.objects.none()
             for item in w:
-                l = Leiloes.objects.filter(id=item.Leilao_id)
+                l = Leiloes.objects.filter(leilao_id=item.leiloes)
+                negoc  = Negociacoes.objects.filter(negociacoes_id = item.negociacoes)
                 watchlist = list(chain(watchlist, l))
+                watchlist = list(chain(watchlist, negoc))
 
-            userDetails = Users.objects.get(user_id=user_id)
             return render(request, 'index.html',
-                {'Leiloes': leilao, 'balance': userDetails.credito, 'watchlist': watchlist})
+                {'leiloes': leiloes, 'balance': user.credito, 'watchlist': watchlist})
         except Users.DoesNotExist:
             pass
 
-    return render(request, 'index.html', {'Leiloes': leilao})
+    return render(request, 'index.html', {'leiloes': leiloes})
 
 def bid_page(request, leilao_id):
     """
@@ -65,12 +77,12 @@ def bid_page(request, leilao_id):
     print(type(leilao_id))
     try:
         # if not logged in return to the index page.
-        if request.session['username']:
+        if request.session['session_key']:
             # If the Leiloes hasn't started return to the index page.
             leilao = Leiloes.objects.filter(id=leilao_id)
-            if leilao[0].hora_inicio > timezone.now():
+            if leilao[0].data_hora_inicio > datetime.now():
                 return index(request)
-            user = User.objects.filter(username=request.session['username'])
+            user = Users.objects.filter(user_id=request.session['session_key'])
 
             stats = []
             time_left, expired = remaining_time(leilao[0])
@@ -94,15 +106,11 @@ def bid_page(request, leilao_id):
             else:
                 stats.append(None)
 
-            # Fourth element in stats list
-            chat = Chat.objects.all().order_by('time_sent')
-            stats.append(chat)
-
             # Getting user's watchlist.
             w = Watchlist.objects.filter(user_id=user[0])
             watchlist = Leiloes.objects.none()
             for item in w:
-                l = Leiloes.objects.filter(id=item.Leilao_id)
+                l = Leiloes.objects.filter(id=item.leilao_id)
                 watchlist = list(chain(watchlist, l))
 
             return render(request, 'bid.html',
@@ -127,12 +135,12 @@ def raise_bid(request, leilao_id):
     leilao = Leiloes.objects.get(id=Leiloes.leilao_id)
     if leilao.hora_fim < timezone.now():
         return bid_page(request, leilao_id)
-    elif leilao.hora_inicio > timezone.now():
+    elif leilao.data_hora_inicio > datetime.now():
         return index(request)
 
     try:
-        if request.session['username']:
-            user = Users.objects.get(username=request.session['username'])
+        if request.session['session_key']:
+            user = Users.objects.get(user_id=request.session['session_key'])
             if user.credito > 0.0:
                 latest_bid = Licitacoes.objects.filter(Leilao_id=leilao_id).order_by('-hora_licitacao')
                 if not latest_bid:
@@ -159,7 +167,7 @@ def register_page(request):
     """
     return render(request, 'register.html')
 
-def watchlist(request, Leiloe_id):
+def watchlist(request, leilao_id):
     """
     Adds the Leiloes to the user's watchlist.
 
@@ -168,14 +176,14 @@ def watchlist(request, Leiloe_id):
     Function : index(request)
     """
     try:
-        if request.session['username']:
-            user = Users.objects.filter(username=request.session['username'])
-            leilao = Leiloes.objects.filter(id=Leiloe_id)
+        if request.session['session_key']:
+            user = Users.objects.filter(user_id=request.session['session_key'])
+            leilao = Leiloes.objects.filter(leilao_id=leilao_id)
 
-            w = Watchlist.objects.filter(Leiloe_id=Leiloe_id)
+            w = Watchlist.objects.filter(Leiloe_id=leilao_id)
             if not w:
                 watchlist_item = Watchlist()
-                watchlist_item.Leilao_id = leilao[0]
+                watchlist_item.leilao_id = leilao[0]
                 watchlist_item.user_id = user[0]
                 watchlist_item.save()
             else:
@@ -201,13 +209,13 @@ def watchlist_page(request):
         If the user is not logged in.
     """
     try:
-        if request.session['username']:
-            user = Users.objects.filter(username=request.session['username'])
+        if request.session['session_key']:
+            user = Users.objects.filter(username=request.session['session_key'])
             w = Watchlist.objects.filter(user_id=user[0])
 
             leilao = Leiloes.objects.none()
             for item in w:
-                l = leilao.objects.filter(id=item.Leilao_id, hora_fim__gte=timezone.now())
+                l = leilao.filter(id=item.leilao_id, hora_fim__gte=timezone.now())
                 leilao = list(chain(Leiloes, l))
             return render(request, 'index.html', {
                 'Leiloes': leilao,
@@ -305,14 +313,14 @@ def filter_leilao(request, categoria):
             ).order_by('hora_inicio')
 
     try:
-        if request.session['username']:
+        if request.session["session_key"]:
             leilao = Leiloes.objects.filter(hora_fim__gte=datetime.now()).order_by('hora_inicio')
-            user = Users.objects.filter(username=request.session['username'])
+            user = Users.objects.filter(username=request.session)
 
             w = Watchlist.objects.filter(user_id=user[0])
             watchlist = Leiloes.objects.none()
             for item in w:
-                l = Leiloes.objects.filter(id=item.Leilao_id)
+                l = Leiloes.objects.filter(leilao_id=item.leiloes)
                 watchlist = list(chain(watchlist, l))
             print(1)
             return render(request, 'index.html', {'Leiloes': f_leilao, 'user': user[0], 'watchlist': watchlist})
@@ -321,20 +329,24 @@ def filter_leilao(request, categoria):
 
     return index(request)
 
-def session_id():
-    bd = conexaomongo
-    col = bd["Session"]
-    xx = col.find({},{'session_id': 0})
-    for xxx in xx:
-        return int(xxx["session_id"])
-    print(session_id)
+def register_page(request):
+    """
+    Returns the registration page.
+
+    Returns
+    -------
+    HTTPResponse
+        The registration page.
+    """
+    return render(request, 'register.html')
 
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data['username']
+            username = request.session.session_key
             password1 = form.cleaned_data['password1']
+            password2 = form.cleaned_data['password2']
             email = form.cleaned_data('email')
             p_nome = form.cleaned_data('p_nome')
             u_nome = form.cleaned_data('u_nome')
@@ -347,10 +359,22 @@ def register(request):
             data_registo = date.today()
 
             cursor = connection.cursor()
-            cursor.execute("call inserir_user(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);",
-                    (username, password1, email, p_nome, u_nome,
-                        float(credito), telefone, endereco, cidade,
-                        cod_postal, pais, data_registo))
+            user_id = cursor.execute("SELECT MAX(user_id) FROM website_users")
+            cursor.execute("call inserir_user(%s,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);",
+                (
+                    user_id +1,
+                    username,
+                    password1,
+                    email, 
+                    p_nome, 
+                    u_nome,
+                    float(credito), 
+                    telefone, 
+                    endereco, 
+                    cidade,
+                    cod_postal, 
+                    pais, 
+                    data_registo))
             cursor.close()
             return index(request)
 

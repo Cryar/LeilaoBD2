@@ -2,13 +2,13 @@ from django import forms
 from website.models import Users
 
 class RegistrationForm(forms.Form):
-    username = forms.CharField(max_length=40)
+    username = forms.CharField(max_length=45)
     password1 = forms.CharField(max_length=100)
     password2 = forms.CharField(max_length=100)
     email = forms.EmailField()
     p_nome = forms.CharField(max_length=50)
     u_nome = forms.CharField(max_length=50)
-    credito = forms.DecimalField(max_digits=6, decimal_places=2)
+    credito = forms.FloatField()
     telefone = forms.CharField(max_length=14)
     endereco = forms.CharField(max_length=255)
     cidade = forms.CharField(max_length=45)
